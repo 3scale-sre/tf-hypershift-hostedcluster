@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "0"
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+  namespace: {{ .Values.namespace }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "0"
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+rules:
+  - apiGroups: ["cluster.open-cluster-management.io"]
+    resources: ["*"]
+    verbs: ["create", "get", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "0"
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+subjects:
+  - kind: ServiceAccount
+    name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+    namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "0"
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}-entrypoint"
+  namespace: {{ .Values.namespace }}
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+
+    # Configure credentials
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    kubectl config set-cluster hub --server=https://kubernetes.default --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    kubectl config set-credentials helm --token=${TOKEN}
+    kubectl config set-context hub --cluster=hub --user=helm
+    kubectl config use-context hub
+
+    # Wait until the managedclsuter resource is created by RHACM
+    until kubectl get managedcluster "${CLUSTER_NAME}"; do
+        echo "waiting for managedclsuter ..."
+        sleep 60
+    done
+
+    # Move the managedcluster to the configured managedclusterset
+    kubectl patch managedcluster ${CLUSTER_NAME} --type json -p "[{\"op\":\"replace\",\"path\":\"/metadata/labels/cluster.open-cluster-management.io~1clusterset\",\"value\":\"${MANAGEDCLUSTERSET}\"}]"
+
+    # Apply extra labels to managedclsuter
+    IFS=',' read -r -a EXTRA_LABELS <<<"${MANAGEDCLUSTER_EXTRA_LABELS}"
+    for LABEL in "${EXTRA_LABELS[@]}"; do
+        IFS='=' read -r -a PARTS <<<"${LABEL}"
+        kubectl patch managedcluster ${CLUSTER_NAME} --type json -p "[{\"op\":\"add\",\"path\":\"/metadata/labels/${PARTS[0]/\//~1}\",\"value\":\"${PARTS[1]}\"}]"
+    done
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook-weight: "1"
+  name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+  namespace: {{ .Values.namespace }}
+spec:
+  template:
+    metadata:
+      name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+      namespace: {{ .Values.namespace }}
+    spec:
+      restartPolicy: Never
+      serviceAccount: "post-hook-{{ .Release.Name }}-{{ .Values.name }}"
+      containers:
+        - name: post-install-job
+          image: bitnami/kubectl
+          command: ["/bin/sh", "-c", "/app/entrypoint.sh"]
+          env:
+            - name: CLUSTER_NAME
+              value: {{ .Values.name }}
+            - name: MANAGEDCLUSTERSET
+              value: {{ .Values.managedClusterSet }}
+            - name: MANAGEDCLUSTER_EXTRA_LABELS
+              value: {{ join "," .Values.managedClusterExtraLabels }}
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /app
+      volumes:
+        - name: "entrypoint"
+          configMap:
+            defaultMode: 0777
+            name: "post-hook-{{ .Release.Name }}-{{ .Values.name }}-entrypoint"

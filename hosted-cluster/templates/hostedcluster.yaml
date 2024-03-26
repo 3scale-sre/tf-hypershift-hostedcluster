@@ -1,0 +1,125 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  autoscaling: {}
+  configuration:
+    {{- if .Values.github }}
+    oauth:
+      identityProviders:
+      - github:
+          ca:
+            name: ""
+          clientID: {{ .Values.github.clientID }}
+          clientSecret:
+            name: "hcp-{{ .Values.name }}-github-oauth-idp"
+          hostname: ""
+          teams:
+          {{- range .Values.github.teams }}
+          - {{ . }}
+          {{- end }}
+        mappingMethod: claim
+        name: github
+        type: GitHub
+    {{- end }}
+  controllerAvailabilityPolicy: SingleReplica
+  dns:
+    baseDomain: {{ .Values.publicDomain }}
+    publicZoneID: {{ .Values.publicZoneID }}
+    privateZoneID: {{ .Values.privateZoneID }}
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+          storageClassName: gp3-csi
+        type: PersistentVolume
+    managementType: Managed
+  fips: {{ .Values.fipsEnabled }}
+  infraID: {{ .Values.name }}
+  issuerURL: "https://{{ .Values.oidcURL }}"
+  networking:
+    clusterNetwork:
+    - cidr: 10.132.0.0/14
+    machineNetwork:
+    {{- range .Values.vpcCidrBlocks }}
+    - cidr: {{ . }}
+    {{- end }}
+    networkType: OVNKubernetes
+    serviceNetwork:
+    - cidr: 172.31.0.0/16
+  platform:
+    aws:
+      cloudProviderConfig:
+        vpc: {{ .Values.vpcID }}
+        subnet:
+          id: {{ .Values.subnetID }}
+        zone: {{ .Values.zone }}
+      endpointAccess: Public
+      region: {{ .Values.region }}
+      rolesRef:
+        controlPlaneOperatorARN: {{ .Values.roles.controlPlaneOperator }}
+        imageRegistryARN: {{ .Values.roles.imageRegistry }}
+        ingressARN: {{ .Values.roles.ingress }}
+        kubeCloudControllerARN: {{ .Values.roles.cloudController }}
+        networkARN: {{ .Values.roles.network }}
+        nodePoolManagementARN: {{ .Values.roles.nodePool }}
+        storageARN: {{ .Values.roles.storage }}
+    type: AWS
+  pullSecret:
+    name: {{ .Values.pullSecret }}
+  release:
+    image: {{ .Values.releaseImage }}
+  secretEncryption:
+    aescbc:
+      activeKey:
+        name: {{ .Values.name }}-etcd-encryption-key
+    type: aescbc
+  services:
+  - service: APIServer
+    servicePublishingStrategy:
+      {{- if .Values.providerDomain }}
+      type: Route
+      route:
+        hostname: "api-{{ .Values.name }}.{{ .Values.providerDomain }}"
+      {{- else }}
+      type: LoadBalancer
+      {{- end }}
+  - service: OAuthServer
+    servicePublishingStrategy:
+      {{- if .Values.providerDomain }}
+      type: Route
+      route:
+        hostname: "oauth-{{ .Values.name }}.{{ .Values.providerDomain }}"
+      {{- else }}
+      type: LoadBalancer
+      {{- end }}
+  - service: Konnectivity
+    servicePublishingStrategy:
+      type: Route
+      {{- if .Values.providerDomain }}
+      route:
+        hostname: "konnectivity-{{ .Values.name }}.{{ .Values.providerDomain }}"
+      {{- end }}
+  - service: Ignition
+    servicePublishingStrategy:
+      type: Route
+      {{- if .Values.providerDomain }}
+      route:
+        hostname: "ignition-{{ .Values.name }}.{{ .Values.providerDomain }}"
+      {{- end }}
+  - service: OVNSbDb
+    servicePublishingStrategy:
+      type: Route
+      {{- if .Values.providerDomain }}
+      route:
+        hostname: "ovn-sbdb-{{ .Values.name }}.{{ .Values.providerDomain }}"
+      {{- end }}
+  sshKey:
+    name: {{ .Values.sshKey }}
+status:
+  controlPlaneEndpoint:
+    host: ""
+    port: 0

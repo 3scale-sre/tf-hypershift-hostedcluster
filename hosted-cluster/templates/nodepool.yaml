@@ -1,0 +1,27 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: NodePool
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  arch: amd64
+  clusterName: {{ .Values.name }}
+  management:
+    autoRepair: true
+    upgradeType: Replace
+  nodeDrainTimeout: 0s
+  platform:
+    aws:
+      instanceProfile: {{ .Values.workers.profile }}
+      instanceType: {{ .Values.workers.instanceType }}
+      rootVolume:
+        size: 120
+        type: gp3
+      securityGroups:
+      - id: {{ .Values.workers.securityGroup }}
+      subnet:
+        id: {{ .Values.subnetID }}
+    type: AWS
+  release:
+    image: {{ .Values.releaseImage }}
+  replicas: {{ .Values.workers.number }}
