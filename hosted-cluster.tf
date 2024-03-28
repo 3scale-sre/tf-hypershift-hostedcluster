@@ -49,7 +49,7 @@ data "template_file" "helm_values" {
 }
 
 resource "helm_release" "hosted_cluster" {
-  name  = "hosted-cluster"
+  name  = local.name
   chart = "./${path.module}/hosted-cluster"
 
   values = [data.template_file.helm_values.rendered]
