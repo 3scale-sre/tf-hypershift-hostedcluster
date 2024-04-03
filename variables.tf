@@ -51,6 +51,11 @@ variable "fips_enabled" {
   type    = bool
   default = false
 }
+variable "oauth_endpoint_certificate_secret" {
+  type    = string
+  default = ""
+}
+
 variable "managedclusterset" {
   type    = string
   default = "hypershift"

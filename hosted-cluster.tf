@@ -27,6 +27,7 @@ data "template_file" "helm_values" {
     }
     "pullSecret" : "hypershift-pull-secret"
     "fipsEnabled" : var.fips_enabled
+    "oauthEndpointCertificateSecretName" : var.oauth_endpoint_certificate_secret
     "sshKey" : "hypershift-ssh-key"
     "releaseImage" : var.release_image
     "workers" : {
