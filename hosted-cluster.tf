@@ -26,6 +26,7 @@ data "template_file" "helm_values" {
       "storage" : aws_iam_role.aws_ebs_csi_driver_controller.arn
     }
     "pullSecret" : "hypershift-pull-secret"
+    "fipsEnabled" : var.fips_enabled
     "sshKey" : "hypershift-ssh-key"
     "releaseImage" : var.release_image
     "workers" : {
