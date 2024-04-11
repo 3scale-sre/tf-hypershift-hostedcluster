@@ -24,4 +24,10 @@ spec:
     type: AWS
   release:
     image: {{ .Values.releaseImage }}
-  replicas: {{ .Values.workers.number }}
+  {{- if .Values.worker_autoscaling.enabled }}
+  autoScaling:
+    min: {{ .Values.worker_autoscaling.min }}
+    max: {{ .Values.worker_autoscaling.max }}
+  {{- else }}
+  replicas: {{ .Values.worker_replicas }}
+  {{- end }}

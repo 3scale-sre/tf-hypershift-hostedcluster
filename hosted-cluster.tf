@@ -27,14 +27,16 @@ data "template_file" "helm_values" {
     }
     "pullSecret" : "hypershift-pull-secret"
     "fipsEnabled" : var.fips_enabled
+    "oauthEndpointCertificateSecretName" : var.oauth_endpoint_certificate_secret
     "sshKey" : "hypershift-ssh-key"
     "releaseImage" : var.release_image
     "workers" : {
       "profile" : aws_iam_instance_profile.worker.name
       "instanceType" : var.workers_instance_type
       "securityGroup" : aws_security_group.worker.id
-      "number" : var.workers_number
     }
+    "worker_replicas" : var.worker_replicas
+    "worker_autoscaling" : var.worker_autoscaling
     "vault" : {
       "roleID" : vault_approle_auth_backend_role.this.role_id
       "secretID" : vault_approle_auth_backend_role_secret_id.this.secret_id

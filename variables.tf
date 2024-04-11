@@ -35,7 +35,20 @@ variable "workers_instance_type" {
   type    = string
   default = "t3a.2xlarge"
 }
-variable "workers_number" {
+variable "worker_autoscaling" {
+  type = object({
+    min     = number
+    max     = number
+    enabled = bool
+  })
+  default = {
+    min     = 0
+    max     = 0
+    enabled = false
+  }
+}
+
+variable "worker_replicas" {
   type    = number
   default = 1
 }
@@ -51,6 +64,11 @@ variable "fips_enabled" {
   type    = bool
   default = false
 }
+variable "oauth_endpoint_certificate_secret" {
+  type    = string
+  default = ""
+}
+
 variable "managedclusterset" {
   type    = string
   default = "hypershift"

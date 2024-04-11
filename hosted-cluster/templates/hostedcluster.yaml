@@ -6,7 +6,7 @@ metadata:
 spec:
   autoscaling: {}
   configuration:
-    {{- if .Values.github }}
+    {{- if not (eq .Values.github.clientID "") }}
     oauth:
       identityProviders:
       - github:
@@ -23,6 +23,15 @@ spec:
         mappingMethod: claim
         name: github
         type: GitHub
+    {{- end }}
+    {{- if not (eq .Values.oauthEndpointCertificateSecretName "") }}
+    apiServer:
+      servingCerts:
+        namedCertificates:
+        - names:
+          - "oauth-{{ .Values.name }}.{{ .Values.providerDomain }}"
+          servingCertificate:
+            name: {{ .Values.oauthEndpointCertificateSecretName }}
     {{- end }}
   controllerAvailabilityPolicy: SingleReplica
   dns:
