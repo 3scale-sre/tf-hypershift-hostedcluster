@@ -2,7 +2,7 @@
 resource "vault_policy" "this" {
   name   = "${local.name}-vault-approle"
   policy = <<EOT
-path "secret/data/kubernetes/common/*" {
+path "secret/data/kubernetes/${var.environment}-${var.project}/common/*" {
   capabilities = ["read"]
 }
 path "secret/data/kubernetes/${var.environment}-${var.project}/${var.cluster}/*" {
