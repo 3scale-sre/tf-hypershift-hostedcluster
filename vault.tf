@@ -24,6 +24,7 @@ resource "vault_approle_auth_backend_role_secret_id" "this" {
 
 # Retrieve GitHub oauth credentials from vault
 module "github_oauth_idp" {
+  count  = var.github_oauth_enabled ? 1 : 0
   source = "git@github.com:3scale-ops/tf-vault-secret.git?ref=tags/0.1.3"
   path   = "kubernetes/${var.environment}-${var.project}/${var.cluster}/github-oauth-idp"
 }

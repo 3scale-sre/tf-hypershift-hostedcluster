@@ -64,6 +64,14 @@ variable "fips_enabled" {
   type    = bool
   default = false
 }
+variable "github_oauth_enabled" {
+  type    = bool
+  default = true
+}
+variable "github_oauth_authorized_teams" {
+  type    = list(string)
+  default = ["3scale/operations"]
+}
 variable "oauth_endpoint_certificate_secret" {
   type    = string
   default = ""
