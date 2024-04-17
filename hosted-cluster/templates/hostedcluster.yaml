@@ -6,7 +6,7 @@ metadata:
 spec:
   autoscaling: {}
   configuration:
-    {{- if not (eq .Values.github.clientID "") }}
+    {{- if .Values.github }}
     oauth:
       identityProviders:
       - github:

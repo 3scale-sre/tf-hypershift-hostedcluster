@@ -41,10 +41,10 @@ vault:
   roleID: ""
   secretID: ""
 
-github:
-  clientID: ""
-  clientSecret: ""
-  teams: []
+# github:
+#   clientID: ""
+#   clientSecret: ""
+#   teams: []
 
 managedClusterSet: ""
 managedClusterExtraLabels: []

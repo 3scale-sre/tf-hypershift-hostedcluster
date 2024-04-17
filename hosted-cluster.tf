@@ -37,17 +37,12 @@ data "template_file" "helm_values" {
     }
     "worker_replicas" : var.worker_replicas
     "worker_autoscaling" : var.worker_autoscaling
+    "managedClusterSet" : var.managedclusterset
+    "managedClusterExtraLabels" : var.managedcluster_extra_labels
     "vault" : {
       "roleID" : vault_approle_auth_backend_role.this.role_id
       "secretID" : vault_approle_auth_backend_role_secret_id.this.secret_id
     }
-    "github" : {
-      "clientID" : jsondecode(module.github_oauth_idp.value)["clientID"]
-      "clientSecret" : jsondecode(module.github_oauth_idp.value)["clientSecret"]
-      "teams" : ["3scale/operations"]
-    }
-    "managedClusterSet" : var.managedclusterset
-    "managedClusterExtraLabels" : var.managedcluster_extra_labels
   })
 }
 
@@ -62,6 +57,31 @@ resource "helm_release" "hosted_cluster" {
     name  = "etcdEncryptionKey"
     value = random_bytes.etcd_encryption_key.base64
 
+  }
+
+  dynamic "set" {
+    for_each = (var.github_oauth_enabled ? ["apply"] : [])
+    content {
+      name  = "github.clientID"
+      value = jsondecode(module.github_oauth_idp[0].value)["clientID"]
+    }
+  }
+
+  dynamic "set" {
+    for_each = (var.github_oauth_enabled ? ["apply"] : [])
+    content {
+      name  = "github.clientSecret"
+      value = jsondecode(module.github_oauth_idp[0].value)["clientSecret"]
+    }
+  }
+
+  dynamic "set" {
+    for_each = (var.github_oauth_enabled ? ["apply"] : [])
+    content {
+      name = "github.teams"
+      # helm has a very weird format for setting lists in its --set command line flag
+      value = "{${join(",", var.github_oauth_authorized_teams)}}"
+    }
   }
 
   timeout = 900
