@@ -98,12 +98,10 @@ spec:
       {{- end }}
   - service: OAuthServer
     servicePublishingStrategy:
-      {{- if .Values.providerDomain }}
       type: Route
+      {{- if .Values.providerDomain }}
       route:
         hostname: "oauth-{{ .Values.name }}.{{ .Values.providerDomain }}"
-      {{- else }}
-      type: LoadBalancer
       {{- end }}
   - service: Konnectivity
     servicePublishingStrategy:
