@@ -21,7 +21,8 @@ variable "oidc_bucket_name" {
   type = string
 }
 variable "provider_domain" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "consumer_domain" {

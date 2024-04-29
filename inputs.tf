@@ -23,5 +23,6 @@ data "aws_route53_zone" "consumer" {
 }
 
 data "aws_route53_zone" "provider" {
-  name = var.provider_domain
+  count = (var.provider_domain != "" ? 1 : 0)
+  name  = var.provider_domain
 }
