@@ -30,6 +30,16 @@ function get_owned_sgs() {
         --output text
 }
 
+function delete_owned_s3_buckets() {
+    for bucket in $(aws s3api list-buckets --query "Buckets[?starts_with(Name, '${CLUSTER_NAME}-image-registry')].Name" --output text); do
+        result=$(aws s3api get-bucket-tagging --bucket ${bucket} --query "TagSet[?Key == 'kubernetes.io/cluster/${CLUSTER_NAME}'] | [0].Value")
+        if [[ "$result" == '"owned"' ]]; then
+            echo "Deleting ${bucket}"
+            aws s3api delete-bucket --bucket ${bucket}
+        fi
+    done
+}
+
 function delete_list_of_resources() {
     local AWSCMD=${2}
     local LIST=$(echo ${3} | sed -e 's/\s/,/g')
@@ -46,6 +56,7 @@ CLUSTER_NAME=${1}
 # Classic load balancers
 CLASSIC_ELBs=$(get_owned_elbsv1 ${1})
 if [[ -n "${CLASSIC_ELBs}" ]]; then
+    echo "Deleting Classic ELBs: ${CLASSIC_ELBs}"
     delete_list_of_resources "ClassicELB" "aws elb delete-load-balancer --load-balancer-name" "${CLASSIC_ELBs}"
 fi
 while [[ -n "$(get_owned_elbsv1 ${1})" ]]; do sleep 10; done
@@ -53,20 +64,26 @@ while [[ -n "$(get_owned_elbsv1 ${1})" ]]; do sleep 10; done
 # V2 load balancers
 V2_ELBs=$(get_owned_elbsv2 ${1})
 if [[ -n "${V2_ELBs}" ]]; then
+    echo "Deleting V2 ELBs: ${V2_ELBs}"
     delete_list_of_resources "ELBv2" "aws elbv2 delete-load-balancer --load-balancer-arn" "${V2_ELBs}"
 fi
 while [[ -n "$(get_owned_elbsv2 ${1})" ]]; do sleep 10; done
 
 # Target groups
 TARGET_GROUPs=$(get_owned_targetgroups ${1})
-if [[ -n "${V2_ELBs}" ]]; then
-    delete_list_of_resources "TargetGroup" "aws elbv2 delete-target-group --target-group-arn" "${V2_ELBs}"
+if [[ -n "${TARGET_GROUPs}" ]]; then
+    echo "Deleting TargetGroups: ${TARGET_GROUPs}"
+    delete_list_of_resources "TargetGroup" "aws elbv2 delete-target-group --target-group-arn" "${TARGET_GROUPs}"
 fi
 while [[ -n "$(get_owned_targetgroups ${1})" ]]; do sleep 10; done
 
 # Security groups
 SGs=$(get_owned_sgs ${1})
 if [[ -n "${SGs}" ]]; then
+    echo "Deleting SecurityGroups: ${SGs}"
     delete_list_of_resources "SecurityGroup" "aws ec2 delete-security-group --group-id" "${SGs}"
 fi
 while [[ -n "$(get_owned_sgs ${1})" ]]; do sleep 10; done
+
+# S3 registry bucket
+delete_owned_s3_buckets
