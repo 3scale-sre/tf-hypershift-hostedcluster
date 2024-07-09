@@ -39,10 +39,6 @@ data "template_file" "helm_values" {
     "worker_autoscaling" : var.worker_autoscaling
     "managedClusterSet" : var.managedclusterset
     "managedClusterExtraLabels" : var.managedcluster_extra_labels
-    "vault" : {
-      "roleID" : vault_approle_auth_backend_role.this.role_id
-      "secretID" : vault_approle_auth_backend_role_secret_id.this.secret_id
-    }
   })
 }
 
@@ -81,6 +77,22 @@ resource "helm_release" "hosted_cluster" {
       name = "github.teams"
       # helm has a very weird format for setting lists in its --set command line flag
       value = "{${join(",", var.github_oauth_authorized_teams)}}"
+    }
+  }
+
+    dynamic "set" {
+    for_each = (var.deploy_vault_app_role ? ["apply"] : [])
+    content {
+      name  = "vault.roleID"
+      value = vault_approle_auth_backend_role.this.role_id
+    }
+  }
+
+  dynamic "set" {
+    for_each = (var.deploy_vault_app_role ? ["apply"] : [])
+    content {
+      name = "vault.secretID"
+      value = vault_approle_auth_backend_role_secret_id.this.secret_id
     }
   }
 
