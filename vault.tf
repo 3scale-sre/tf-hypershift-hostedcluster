@@ -1,5 +1,6 @@
 # AppRole for externalsecrets within the hostedcluster
 resource "vault_policy" "this" {
+  count  = var.deploy_vault_app_role ? 1 : 0
   name   = "${local.name}-vault-approle"
   policy = <<EOT
 path "secret/data/kubernetes/${var.environment}-${var.project}/common/*" {
@@ -12,14 +13,16 @@ EOT
 }
 
 resource "vault_approle_auth_backend_role" "this" {
+  count  = var.deploy_vault_app_role ? 1 : 0
   backend        = "approle"
   role_name      = "${local.name}-vault-approle"
-  token_policies = [vault_policy.this.name]
+  token_policies = [vault_policy.this[count.index].name]
 }
 
 resource "vault_approle_auth_backend_role_secret_id" "this" {
+  count  = var.deploy_vault_app_role ? 1 : 0
   backend   = "approle"
-  role_name = vault_approle_auth_backend_role.this.role_name
+  role_name = vault_approle_auth_backend_role.this[count.index].role_name
 }
 
 # Retrieve GitHub oauth credentials from vault
