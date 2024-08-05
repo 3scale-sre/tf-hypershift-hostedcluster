@@ -78,6 +78,11 @@ variable "oauth_endpoint_certificate_secret" {
   default = ""
 }
 
+variable "deploy_vault_app_role" {
+  type = bool
+  default = false
+}
+
 variable "managedclusterset" {
   type    = string
   default = "hypershift"
