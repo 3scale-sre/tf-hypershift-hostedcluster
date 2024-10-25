@@ -13,6 +13,7 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 # Worker nodes
 #
 resource "aws_iam_role" "worker" {
+  provider             = aws.consumer
   name                 = format("%s-worker-role", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -34,9 +35,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "worker" {
-  name   = format("%s-worker-policy", local.name)
-  role   = aws_iam_role.worker.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-worker-policy", local.name)
+  role     = aws_iam_role.worker.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -54,15 +56,17 @@ POLICY
 }
 
 resource "aws_iam_instance_profile" "worker" {
-  name = format("%s-worker", local.name)
-  path = "/"
-  role = aws_iam_role.worker.name
+  provider = aws.consumer
+  name     = format("%s-worker", local.name)
+  path     = "/"
+  role     = aws_iam_role.worker.name
 }
 
 #
 # AWS EBS CSI Driver controller
 #
 resource "aws_iam_role" "aws_ebs_csi_driver_controller" {
+  provider             = aws.consumer
   name                 = format("%s-aws-ebs-csi-driver-controller", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -88,9 +92,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "aws_ebs_csi_driver_controller" {
-  name   = format("%s-aws-ebs-csi-driver-controller", local.name)
-  role   = aws_iam_role.aws_ebs_csi_driver_controller.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-aws-ebs-csi-driver-controller", local.name)
+  role     = aws_iam_role.aws_ebs_csi_driver_controller.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -148,6 +153,7 @@ POLICY
 # Cloud Controller
 #
 resource "aws_iam_role" "cloud_controller" {
+  provider             = aws.consumer
   name                 = format("%s-cloud-controller", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -173,9 +179,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "cloud_controller" {
-  name   = format("%s-cloud-controller", local.name)
-  role   = aws_iam_role.cloud_controller.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-cloud-controller", local.name)
+  role     = aws_iam_role.cloud_controller.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -254,6 +261,7 @@ POLICY
 # Cloud Network Config Controller
 #
 resource "aws_iam_role" "cloud_network_config_controller" {
+  provider             = aws.consumer
   name                 = format("%s-cloud-network-config-controller", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -279,9 +287,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "cloud_network_config_controller" {
-  name   = format("%s-cloud-network-config-controller", local.name)
-  role   = aws_iam_role.cloud_network_config_controller.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-cloud-network-config-controller", local.name)
+  role     = aws_iam_role.cloud_network_config_controller.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -309,6 +318,7 @@ POLICY
 # Control Plane Operator
 #
 resource "aws_iam_role" "control_plane_operator" {
+  provider             = aws.consumer
   name                 = format("%s-control-plane-operator", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -334,9 +344,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "control_plane_operator" {
-  name   = format("%s-control-plane-operator", local.name)
-  role   = aws_iam_role.control_plane_operator.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-control-plane-operator", local.name)
+  role     = aws_iam_role.control_plane_operator.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -377,6 +388,7 @@ POLICY
 # Node Pool
 #
 resource "aws_iam_role" "node_pool" {
+  provider             = aws.consumer
   name                 = format("%s-node-pool", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -402,9 +414,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "node_pool" {
-  name   = format("%s-node-pool", local.name)
-  role   = aws_iam_role.node_pool.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-node-pool", local.name)
+  role     = aws_iam_role.node_pool.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -518,6 +531,7 @@ POLICY
 # Openshift Image Registry
 #
 resource "aws_iam_role" "openshift_image_registry" {
+  provider             = aws.consumer
   name                 = format("%s-openshift-image-registry", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -546,9 +560,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "openshift_image_registry" {
-  name   = format("%s-openshift-image-registry", local.name)
-  role   = aws_iam_role.openshift_image_registry.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-openshift-image-registry", local.name)
+  role     = aws_iam_role.openshift_image_registry.name
+  policy   = <<POLICY
 {
   "Statement": [
     {
@@ -585,6 +600,7 @@ POLICY
 # Openshift Ingress
 #
 resource "aws_iam_role" "openshift_ingress" {
+  provider             = aws.consumer
   name                 = format("%s-openshift-ingress", local.name)
   max_session_duration = "3600"
   path                 = "/"
@@ -610,9 +626,10 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "openshift_ingress" {
-  name   = format("%s-openshift-ingress", local.name)
-  role   = aws_iam_role.openshift_ingress.name
-  policy = <<POLICY
+  provider = aws.consumer
+  name     = format("%s-openshift-ingress", local.name)
+  role     = aws_iam_role.openshift_ingress.name
+  policy   = <<POLICY
 {
   "Statement": [
     {

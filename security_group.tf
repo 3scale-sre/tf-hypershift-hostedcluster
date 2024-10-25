@@ -4,6 +4,7 @@ module "storage_sg_3scale_management_rules" {
 }
 
 resource "aws_security_group" "worker" {
+  provider    = aws.consumer
   name        = format("%s-worker-sg", local.name)
   description = "worker security group"
   vpc_id      = var.vpc_id
