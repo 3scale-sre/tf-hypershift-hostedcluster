@@ -3,8 +3,9 @@ resource "random_bytes" "etcd_encryption_key" {
 }
 
 resource "helm_release" "hosted_cluster" {
-  name  = local.name
-  chart = "./${path.module}/hosted-cluster"
+  name      = local.name
+  namespace = var.namespace
+  chart     = "./${path.module}/hosted-cluster"
 
   values = [
     yamlencode({
