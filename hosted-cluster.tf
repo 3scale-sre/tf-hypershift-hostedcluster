@@ -45,6 +45,7 @@ resource "helm_release" "hosted_cluster" {
       "managedClusterSet" : var.managedclusterset
       "managedClusterExtraLabels" : var.managedcluster_extra_labels
       "tolerations" : var.tolerations
+      "nodeSelector" : var.node_selector
     })
   ]
 

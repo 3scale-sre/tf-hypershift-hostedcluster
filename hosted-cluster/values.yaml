@@ -50,3 +50,4 @@ managedClusterSet: ""
 managedClusterExtraLabels: []
 
 tolerations: []
+nodeSelector: []

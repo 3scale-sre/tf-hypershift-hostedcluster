@@ -101,3 +101,10 @@ variable "tolerations" {
   }))
   default = []
 }
+variable "node_selector" {
+  type = list(object({
+    key      = string
+    value    = string
+  }))
+  default = []
+}
