@@ -6,23 +6,32 @@ locals {
   availability_zones = [for item in data.aws_subnet.selected : item["availability_zone"]]
 }
 
-data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
+data "aws_region" "current" {
+  provider = aws.consumer
+}
+
+data "aws_caller_identity" "current" {
+  provider = aws.consumer
+}
 
 data "aws_vpc" "selected" {
-  id = var.vpc_id
+  provider = aws.consumer
+  id       = var.vpc_id
 }
 
 data "aws_subnet" "selected" {
-  count = length(var.subnet_ids)
-  id    = var.subnet_ids[count.index]
+  provider = aws.consumer
+  count    = length(var.subnet_ids)
+  id       = var.subnet_ids[count.index]
 }
 
 data "aws_route53_zone" "consumer" {
-  name = var.consumer_domain
+  provider = aws.consumer
+  name     = var.consumer_domain
 }
 
 data "aws_route53_zone" "provider" {
-  count = (var.provider_domain != "" ? 1 : 0)
-  name  = var.provider_domain
+  count    = (var.provider_domain != "" ? 1 : 0)
+  provider = aws.provider
+  name     = var.provider_domain
 }

@@ -79,7 +79,7 @@ variable "oauth_endpoint_certificate_secret" {
 }
 
 variable "deploy_vault_app_role" {
-  type = bool
+  type    = bool
   default = false
 }
 
@@ -89,5 +89,22 @@ variable "managedclusterset" {
 }
 variable "managedcluster_extra_labels" {
   type    = list(string)
+  default = []
+}
+
+variable "tolerations" {
+  type = list(object({
+    key      = string
+    operator = string
+    value    = string
+    effect   = string
+  }))
+  default = []
+}
+variable "node_selector" {
+  type = list(object({
+    key      = string
+    value    = string
+  }))
   default = []
 }

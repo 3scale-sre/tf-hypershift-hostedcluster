@@ -2,51 +2,52 @@ resource "random_bytes" "etcd_encryption_key" {
   length = 32
 }
 
-data "template_file" "helm_values" {
-  template = yamlencode({
-    "name" : local.name
-    "namespace" : var.namespace
-    "providerDomain" : var.provider_domain
-    "publicDomain" : var.consumer_domain
-    "publicZoneID" : data.aws_route53_zone.consumer.id
-    "privateZoneID" : aws_route53_zone.private.id
-    "oidcURL" : local.oidc_url
-    "vpcID" : var.vpc_id
-    "vpcCidrBlocks" : local.cidr_blocks
-    "subnetID" : var.subnet_ids[0]
-    "zone" : local.availability_zones[0]
-    "region" : data.aws_region.current.name
-    "roles" : {
-      "controlPlaneOperator" : aws_iam_role.control_plane_operator.arn
-      "imageRegistry" : aws_iam_role.openshift_image_registry.arn
-      "ingress" : aws_iam_role.openshift_ingress.arn
-      "cloudController" : aws_iam_role.cloud_controller.arn
-      "network" : aws_iam_role.cloud_network_config_controller.arn
-      "nodePool" : aws_iam_role.node_pool.arn
-      "storage" : aws_iam_role.aws_ebs_csi_driver_controller.arn
-    }
-    "pullSecret" : "hypershift-pull-secret"
-    "fipsEnabled" : var.fips_enabled
-    "oauthEndpointCertificateSecretName" : var.oauth_endpoint_certificate_secret
-    "sshKey" : "hypershift-ssh-key"
-    "releaseImage" : var.release_image
-    "workers" : {
-      "profile" : aws_iam_instance_profile.worker.name
-      "instanceType" : var.workers_instance_type
-      "securityGroup" : aws_security_group.worker.id
-    }
-    "worker_replicas" : var.worker_replicas
-    "worker_autoscaling" : var.worker_autoscaling
-    "managedClusterSet" : var.managedclusterset
-    "managedClusterExtraLabels" : var.managedcluster_extra_labels
-  })
-}
-
 resource "helm_release" "hosted_cluster" {
-  name  = local.name
-  chart = "./${path.module}/hosted-cluster"
+  name      = local.name
+  namespace = var.namespace
+  chart     = "./${path.module}/hosted-cluster"
 
-  values = [data.template_file.helm_values.rendered]
+  values = [
+    yamlencode({
+      "name" : local.name
+      "namespace" : var.namespace
+      "providerDomain" : var.provider_domain
+      "publicDomain" : var.consumer_domain
+      "publicZoneID" : data.aws_route53_zone.consumer.id
+      "privateZoneID" : aws_route53_zone.private.id
+      "oidcURL" : local.oidc_url
+      "vpcID" : var.vpc_id
+      "vpcCidrBlocks" : local.cidr_blocks
+      "subnetID" : var.subnet_ids[0]
+      "zone" : local.availability_zones[0]
+      "region" : data.aws_region.current.name
+      "roles" : {
+        "controlPlaneOperator" : aws_iam_role.control_plane_operator.arn
+        "imageRegistry" : aws_iam_role.openshift_image_registry.arn
+        "ingress" : aws_iam_role.openshift_ingress.arn
+        "cloudController" : aws_iam_role.cloud_controller.arn
+        "network" : aws_iam_role.cloud_network_config_controller.arn
+        "nodePool" : aws_iam_role.node_pool.arn
+        "storage" : aws_iam_role.aws_ebs_csi_driver_controller.arn
+      }
+      "pullSecret" : "hypershift-pull-secret"
+      "fipsEnabled" : var.fips_enabled
+      "oauthEndpointCertificateSecretName" : var.oauth_endpoint_certificate_secret
+      "sshKey" : "hypershift-ssh-key"
+      "releaseImage" : var.release_image
+      "workers" : {
+        "profile" : aws_iam_instance_profile.worker.name
+        "instanceType" : var.workers_instance_type
+        "securityGroup" : aws_security_group.worker.id
+      }
+      "worker_replicas" : var.worker_replicas
+      "worker_autoscaling" : var.worker_autoscaling
+      "managedClusterSet" : var.managedclusterset
+      "managedClusterExtraLabels" : var.managedcluster_extra_labels
+      "tolerations" : var.tolerations
+      "nodeSelector" : var.node_selector
+    })
+  ]
 
   # this is to avoid the key being shown in the terraform output
   set {
@@ -80,7 +81,7 @@ resource "helm_release" "hosted_cluster" {
     }
   }
 
-    dynamic "set" {
+  dynamic "set" {
     for_each = (var.deploy_vault_app_role ? ["apply"] : [])
     content {
       name  = "vault.roleID"
@@ -91,7 +92,7 @@ resource "helm_release" "hosted_cluster" {
   dynamic "set" {
     for_each = (var.deploy_vault_app_role ? ["apply"] : [])
     content {
-      name = "vault.secretID"
+      name  = "vault.secretID"
       value = vault_approle_auth_backend_role_secret_id.this[0].secret_id
     }
   }

@@ -48,3 +48,6 @@ vault:
 
 managedClusterSet: ""
 managedClusterExtraLabels: []
+
+tolerations: []
+nodeSelector: []

@@ -126,6 +126,21 @@ spec:
       {{- end }}
   sshKey:
     name: {{ .Values.sshKey }}
+  {{- if .Values.tolerations }}
+  tolerations:
+  {{- range .Values.tolerations | default list }}
+  - key: {{ .key }}
+    operator: {{ .operator }}
+    value: {{ .value }}
+    effect: {{ .effect }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.nodeSelector }}
+  nodeSelector:
+  {{- range .Values.nodeSelector }}
+    {{ .key }} : {{ .value }}
+  {{- end }}
+  {{- end }}
 status:
   controlPlaneEndpoint:
     host: ""
