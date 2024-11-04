@@ -33,6 +33,13 @@ function get_owned_sgs() {
     --output text
 }
 
+function get_owned_default_sg() {
+  aws ec2 describe-security-groups \
+    --filters Name=tag:kubernetes.io/cluster/${CLUSTER_NAME},Values=owned Name=tag:Name,Values=${CLUSTER_NAME}-default-sg \
+    --query "SecurityGroups[*].GroupId" \
+    --output text
+}
+
 function delete_owned_s3_buckets() {
   for bucket in $(aws s3api list-buckets --query "Buckets[?starts_with(Name, '${CLUSTER_NAME}-image-registry')].Name" --output text); do
     result=$(aws s3api get-bucket-tagging --bucket ${bucket} --query "TagSet[?Key == 'kubernetes.io/cluster/${CLUSTER_NAME}'] | [0].Value")
@@ -44,12 +51,12 @@ function delete_owned_s3_buckets() {
 }
 
 function delete_list_of_resources() {
-    local AWSCMD=${2}
-    local RESOURCES=($(echo ${3} | tr -s ' '))
-    for RESOURCE in "${RESOURCES[@]}"; do
-      echo "Deleting resource ${1}: ${RESOURCE}"
-      eval "${AWSCMD} ${RESOURCE}"
-    done
+  local AWSCMD=${2}
+  local RESOURCES=($(echo ${3} | tr -s ' '))
+  for RESOURCE in "${RESOURCES[@]}"; do
+    echo "Deleting resource ${1}: ${RESOURCE}"
+    eval "${AWSCMD} ${RESOURCE}"
+  done
 }
 
 test -n "${1}" || (echo "You must provide the cluster name as first arg" && exit -1)
@@ -81,6 +88,13 @@ fi
 while [[ -n "$(get_owned_targetgroups ${FILTER})" ]]; do sleep 10; done
 
 # Security groups
+SGs=$(get_owned_default_sg)
+if [[ -n "${SGs}" ]]; then
+  echo "Deleting Default SecurityGroup: ${SGs}"
+  delete_list_of_resources "SecurityGroup" "aws ec2 delete-security-group --group-id" "${SGs}"
+fi
+while [[ -n "$(get_owned_default_sg)" ]]; do sleep 10; done
+
 SGs=$(get_owned_sgs)
 if [[ -n "${SGs}" ]]; then
   echo "Deleting SecurityGroups: ${SGs}"
