@@ -32,7 +32,7 @@ variable "consumer_domain" {
 variable "release_image" {
   type = string
 }
-variable "workers_instance_type" {
+variable "worker_instance_type" {
   type    = string
   default = "t3a.2xlarge"
 }
@@ -52,6 +52,10 @@ variable "worker_autoscaling" {
 variable "worker_replicas" {
   type    = number
   default = 1
+}
+variable "worker_arch" {
+  type    = string
+  default = "amd64"
 }
 variable "pull_secret" {
   type      = string
@@ -103,8 +107,8 @@ variable "tolerations" {
 }
 variable "node_selector" {
   type = list(object({
-    key      = string
-    value    = string
+    key   = string
+    value = string
   }))
   default = []
 }

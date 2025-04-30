@@ -36,12 +36,13 @@ resource "helm_release" "hosted_cluster" {
       "sshKey" : "hypershift-ssh-key"
       "releaseImage" : var.release_image
       "workers" : {
+        "replicas" : var.worker_replicas
         "profile" : aws_iam_instance_profile.worker.name
-        "instanceType" : var.workers_instance_type
+        "instanceType" : var.worker_instance_type
         "securityGroup" : aws_security_group.worker.id
+        "autoscaling" : var.worker_autoscaling
+        "arch" : var.worker_arch
       }
-      "worker_replicas" : var.worker_replicas
-      "worker_autoscaling" : var.worker_autoscaling
       "managedClusterSet" : var.managedclusterset
       "managedClusterExtraLabels" : var.managedcluster_extra_labels
       "tolerations" : var.tolerations

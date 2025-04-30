@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
 spec:
-  arch: amd64
+  arch: {{ .Values.workers.arch }}
   clusterName: {{ .Values.name }}
   management:
     autoRepair: true
@@ -24,10 +24,10 @@ spec:
     type: AWS
   release:
     image: {{ .Values.releaseImage }}
-  {{- if .Values.worker_autoscaling.enabled }}
+  {{- if .Values.workers.autoscaling.enabled }}
   autoScaling:
-    min: {{ .Values.worker_autoscaling.min }}
-    max: {{ .Values.worker_autoscaling.max }}
+    min: {{ .Values.workers.autoscaling.min }}
+    max: {{ .Values.workers.autoscaling.max }}
   {{- else }}
-  replicas: {{ .Values.worker_replicas }}
+  replicas: {{ .Values.workers.replicas }}
   {{- end }}
