@@ -13,14 +13,14 @@ EOT
 }
 
 resource "vault_approle_auth_backend_role" "this" {
-  count  = var.deploy_vault_app_role ? 1 : 0
+  count          = var.deploy_vault_app_role ? 1 : 0
   backend        = "approle"
   role_name      = "${local.name}-vault-approle"
   token_policies = [vault_policy.this[count.index].name]
 }
 
 resource "vault_approle_auth_backend_role_secret_id" "this" {
-  count  = var.deploy_vault_app_role ? 1 : 0
+  count     = var.deploy_vault_app_role ? 1 : 0
   backend   = "approle"
   role_name = vault_approle_auth_backend_role.this[count.index].role_name
 }

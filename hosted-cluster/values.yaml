@@ -16,11 +16,6 @@ sshKey: "hypershift-ssh-key"
 releaseImage: "quay.io/openshift-release-dev/ocp-release:4.14.10-multi-x86_64"
 fipsEnabled: false
 oauthEndpointCertificateSecretName: ""
-worker_replicas: 1
-worker_autoscaling:
-  enabled: false
-  max: 0
-  min: 0
 
 roles:
   controlPlaneOperator: ""
@@ -32,10 +27,15 @@ roles:
   storage: ""
 
 workers:
-  number: 1
+  replicas: 1
   instanceType: "t3a.xlarge"
   profile: ""
   securityGroup: ""
+  autoscaling:
+    enabled: false
+    max: 0
+    min: 0
+  arch: "amd64"
 
 vault:
   roleID: ""
