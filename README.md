@@ -3,8 +3,8 @@
 The module will create a Hypershift HostedCluster in the Hub cluster using the credentials provided in the helm provider (see example below). The module expects an already set up VPC to be provided and will only create the required IAM resources, security groups and hosted zones.
 The module will also configure the following:
 
-* A Github oauth applications as Openshift's identity provider
-* A Vault approle that grants the cluster access to a specific Vault path so the user can install external-secrets-operator with the provided credentials.
+- A Github oauth applications as Openshift's identity provider
+- A Vault approle that grants the cluster access to a specific Vault path so the user can install external-secrets-operator with the provided credentials.
 
 ## Example usage
 
@@ -37,7 +37,7 @@ Then onvoke the module in `main.tf` like this:
 
 ```hcl
 module "hostedcluster" {
-  source                = "git@github.com:3scale-ops/tf-hypershift-hostedcluster?ref=tags/0.1.0"
+  source                = "git@github.com:3scale-sre/tf-hypershift-hostedcluster?ref=tags/0.1.0"
   environment           = "dev"
   project               = "example"
   cluster               = "cluster"
