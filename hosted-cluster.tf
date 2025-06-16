@@ -102,17 +102,26 @@ resource "helm_release" "hosted_cluster" {
 
   depends_on = [
     aws_iam_openid_connect_provider.oidc,
+    aws_iam_role.worker,
+    aws_iam_role_policy.worker,
     aws_iam_instance_profile.worker,
     aws_iam_role.aws_ebs_csi_driver_controller,
+    aws_iam_role_policy.aws_ebs_csi_driver_controller,
     aws_iam_role.cloud_controller,
+    aws_iam_role_policy.cloud_controller,
     aws_iam_role.cloud_network_config_controller,
+    aws_iam_role_policy.cloud_network_config_controller,
     aws_iam_role.control_plane_operator,
+    aws_iam_role_policy.control_plane_operator,
     aws_iam_role.node_pool,
+    aws_iam_role_policy.node_pool,
     aws_iam_role.openshift_image_registry,
+    aws_iam_role_policy.openshift_image_registry,
     aws_iam_role.openshift_ingress,
-    aws_security_group.worker,
-    aws_route53_zone.private,
+    aws_iam_role_policy.openshift_ingress,
     aws_route53_zone.internal,
+    aws_route53_zone.private,
+    aws_security_group.worker,
     random_bytes.etcd_encryption_key,
     null_resource.cleanup
   ]

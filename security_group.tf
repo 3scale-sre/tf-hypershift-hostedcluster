@@ -9,14 +9,6 @@ resource "aws_security_group" "worker" {
   description = "worker security group"
   vpc_id      = var.vpc_id
 
-  # lifecycle {
-  #   ignore_changes = [
-  #     # Ignore changes ingress rules, as they will be modified
-  #     # by openshift controllers
-  #     ingress,
-  #   ]
-  # }
-
   egress {
     cidr_blocks = ["0.0.0.0/0"]
     from_port   = "0"
